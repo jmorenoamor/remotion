@@ -1,0 +1,17 @@
+# General
+.DS_Store
+*.DS_Store
+Thumbs.db
+thumbs.db
+*.lock
+Desktop.ini
+
+# Files that might appear on external disk
+.Spotlight-V100
+.Trashes
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
