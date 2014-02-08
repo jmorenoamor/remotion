@@ -1,30 +1,33 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 # Remotion
 # Function library for interacting with remote hosts through OpenSSH and Expect
 #
 # Jesús Moreno Amor <jesus@morenoamor.com>
-# v1.0
+# v1.1
 # June 2013
-#
 ################################################################################
 
 ################################################################################
 # Configuration
 ################################################################################
 RM_EXPECT="/usr/bin/expect -c"
-
 RM_SSH="/usr/bin/ssh -q -C"
 RM_SCP="/usr/bin/scp -q -C"
+
+RM_SSH_LOG=""
+RM_SSH_LOG="YES"
 
 ################################################################################
 # Expect configuration
 ################################################################################
 # Disable the expect logging being sent to stdout, set to 1 to enable it
 EXP_LOG_USER="0"
+EXP_LOG_USER="1"
 
 # Disable the echo produced by the spawn command set to "" to enable it
 EXP_NOECHO="-noecho"
+EXP_NOECHO=""
 
 ################################################################################
 # Execute a command in a remote host
@@ -41,6 +44,8 @@ function remote_execute(){
   [[ "$REMOTE_COMMAND" != "NONE" ]] || { exit 4; }
 
   SSH_COMMAND="$RM_SSH $USER@$HOST \"${REMOTE_COMMAND}\""
+
+  if [ $RM_SSH_LOG ]; then echo $SSH_COMMAND; fi
 
   $RM_EXPECT "log_user $EXP_LOG_USER; set timeout -1; spawn $EXP_NOECHO $SSH_COMMAND; expect \"*?assword:*\"; send -- \"${PASSWORD}\r\"; send -- \"\r\"; expect eof"
 
@@ -62,7 +67,9 @@ function remote_getfile(){
   [[ "$HOST" != "NONE" ]] || { exit 3; }
   [[ "$REMOTE_FILE" != "NONE" ]] || { exit 4; }
 
-  SCP_COMMAND="$RM_SCP $USUARIO@$HOST:$REMOTE_FILE $LOCAL_FILE"
+  SCP_COMMAND="$RM_SCP $USER@$HOST:$REMOTE_FILE $LOCAL_FILE"
+
+  if [ $RM_SSH_LOG ]; then echo $SCP_COMMAND; fi
 
   $RM_EXPECT "log_user $EXP_LOG_USER; set timeout -1; spawn $EXP_NOECHO $SCP_COMMAND; expect \"*?assword:*\"; send -- \"${PASSWORD}\r\"; send -- \"\r\"; expect eof"
 
@@ -85,9 +92,12 @@ function remote_putfile(){
   [[ "$LOCAL_FILE" != "NONE" ]] || { exit 4; }
   [[ "$REMOTE_FILE" != "NONE" ]] || { exit 5; }
 
-  SCP_COMMAND="$RM_SCP $LOCAL_FILE $USUARIO@$HOST:$REMOTE_FILE"
+  SCP_COMMAND="$RM_SCP $LOCAL_FILE $USER@$HOST:$REMOTE_FILE"
+
+  if [ $RM_SSH_LOG ]; then echo $SCP_COMMAND; fi
 
   $RM_EXPECT "log_user $EXP_LOG_USER; set timeout -1; spawn $EXP_NOECHO $SCP_COMMAND; expect \"*?assword:*\"; send -- \"${PASSWORD}\r\"; send -- \"\r\"; expect eof"
 
   return 0
 }
+
